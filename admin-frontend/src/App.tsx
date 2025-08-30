@@ -1,16 +1,14 @@
-import React from "react";
-import AdminTable from "./components/AdminTable";
+// import React from "react";   // ลบ
+import AdminDashboard from "./components/AdminDashboard";
 import "antd/dist/reset.css";
-import './App.css';
 
 function App() {
   return (
-    <div style={{ padding: 24 }}>
-      <h1>Admin Management</h1>
-      <AdminTable />
+    <div>
+      <h1>figure Admin Dashboard</h1>
+      <AdminDashboard />
     </div>
   );
 }
-
 
 export default App;

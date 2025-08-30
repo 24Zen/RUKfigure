@@ -10,14 +10,23 @@ import com.example.demo.repository.AdminRepository;
 
 @SpringBootApplication
 public class DemoApplication {
-    public static void main(String[] args) { SpringApplication.run(DemoApplication.class, args); }
+
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
 
     @Bean
-    CommandLineRunner run(AdminRepository repo) {
+    @SuppressWarnings("unused") 
+    CommandLineRunner initData(AdminRepository repo) {
         return args -> {
-            Admin admin = new Admin("admin1", "1234", "admin@example.com");
-            repo.save(admin);
-            System.out.println("Admin saved: " + repo.findAll());
+            long count = repo.count();
+            if (count == 0) {
+                Admin admin = new Admin("admin1", "1234", "admin@example.com");
+                repo.save(admin);
+                System.out.println("[INIT] Seeded default admin: admin1");
+            } else {
+                System.out.println("[INIT] Admin table already has data: " + count + " record(s).");
+            }
         };
     }
 }
