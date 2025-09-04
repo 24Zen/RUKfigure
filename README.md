@@ -73,7 +73,6 @@ RUKfigure is a Java Spring Boot project for managing a collection of collectible
 - [ ] Add Viewer-only pages (SEO-friendly)  
 - [ ] Set up CI/CD (GitHub Actions)  
 - [ ] Add unit/integration tests and API documentation
-- [ ] 
 
 
 ## Getting Started
