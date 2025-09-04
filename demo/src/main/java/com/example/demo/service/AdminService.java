@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder; // <- เพิ่ม
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,9 +16,11 @@ import com.example.demo.repository.AdminRepository;
 public class AdminService {
 
     private final AdminRepository repo;
+    private final PasswordEncoder encoder;  // <- เพิ่ม
 
-    public AdminService(AdminRepository repo) {
+    public AdminService(AdminRepository repo, PasswordEncoder encoder) { // <- เพิ่มใน constructor
         this.repo = repo;
+        this.encoder = encoder;
     }
 
     public List<Admin> getAllAdmins() {
@@ -36,6 +39,13 @@ public class AdminService {
         if (repo.existsByUsername(admin.getUsername())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
+
+        // *** เข้ารหัสรหัสผ่านถ้าส่งมา ***
+        if (admin.getPassword() == null || admin.getPassword().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
+        }
+        admin.setPassword(encoder.encode(admin.getPassword()));
+
         return repo.save(admin);
     }
 
@@ -44,7 +54,7 @@ public class AdminService {
         Admin existing = repo.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found with id " + id));
 
-        // เปลี่ยน username (ถ้ามี) และต้องไม่ซ้ำกับคนอื่น
+        // เปลี่ยน username (ถ้ามี) และต้องไม่ซ้ำ
         if (incoming.getUsername() != null && !incoming.getUsername().equals(existing.getUsername())) {
             if (repo.existsByUsername(incoming.getUsername())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
@@ -56,9 +66,10 @@ public class AdminService {
             existing.setEmail(incoming.getEmail());
         }
 
-        // อัปเดตรหัสผ่านเฉพาะกรณีส่งมาและไม่ว่าง
+        // *** ถ้ามีตั้งรหัสใหม่ และไม่ใช่ค่าว่าง → เข้ารหัสก่อนค่อยเซ็ต ***
         if (incoming.getPassword() != null && !incoming.getPassword().isBlank()) {
-            existing.setPassword(incoming.getPassword());
+            // ป้องกัน encode ซ้ำ: assume ฝั่ง FE ส่ง "plain" มาเท่านั้น
+            existing.setPassword(encoder.encode(incoming.getPassword()));
         }
 
         return repo.save(existing);

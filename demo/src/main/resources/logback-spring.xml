@@ -1,0 +1,38 @@
+<configuration>
+    <!-- Console (pretty JSON for dev) -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <fieldNames>
+                <timestamp>time</timestamp>
+                <message>msg</message>
+                <logger>logger</logger>
+                <thread>thread</thread>
+                <level>level</level>
+            </fieldNames>
+            <customFields>{"app":"RUKfigure","env":"dev"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- ส่งออกไป Logstash ด้วย HTTP -->
+    <appender name="LOGSTASH_HTTP" class="net.logstash.logback.appender.LogstashHttpBatchAppender">
+        <!-- พอร์ตฝั่ง host = 5045 (map เข้า container:5044) -->
+        <url>http://localhost:5045</url>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app":"RUKfigure","env":"dev"}</customFields>
+        </encoder>
+
+        <!-- ปรับ timeout ได้ -->
+        <connectTimeout>3000</connectTimeout>
+        <readTimeout>8000</readTimeout>
+
+        <!-- batch/flush ปรับได้ถ้าต้องการ -->
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <!-- root log ทั้งหมดไปทั้ง 2 ที่ -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="LOGSTASH_HTTP"/>
+    </root>
+</configuration>
